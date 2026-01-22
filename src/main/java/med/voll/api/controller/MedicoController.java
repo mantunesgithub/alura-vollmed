@@ -68,7 +68,6 @@ public class MedicoController {
     public ResponseEntity excluir (@PathVariable Long id) {
         var medico = medicoRepository.getReferenceById(id);
         medico.excluir();   //como esta com @transaction a jpa vai atualizar automaticamente
-
        return ResponseEntity.noContent().build();      //com build, o no content, cria um obj response entity
     }
 
