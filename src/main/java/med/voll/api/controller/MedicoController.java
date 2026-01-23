@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
 @RequestMapping("medicos")
@@ -18,17 +19,20 @@ public class MedicoController {
     @Autowired
     private MedicoRepository medicoRepository;
 
-//        System.out.println("Corpo da requisicao Post Cadastrar");
+    //        System.out.println("Corpo da requisicao Post Cadastrar");
 //        System.out.println(dados);
     @PostMapping
     @Transactional
-    public void cadastrar(@RequestBody @Valid DadosCadastroMedico dados) {
-        medicoRepository.save(new Medico(dados));
+    public ResponseEntity cadastrar(@RequestBody @Valid DadosCadastroMedico dados, UriComponentsBuilder uriBuilder) {
+        Medico medico = new Medico(dados);
+        medicoRepository.save(medico);
+        var uri = uriBuilder.path("/medicos/{id}").buildAndExpand(medico.getId()).toUri();
+
+        return ResponseEntity.created(uri).body(new DadosDetalhamentoMedico(medico));
     }
     /*Repository findAll devolve uma list de Medico mas temos q retornar o record, então precisa converter
       de Medicos para record e Para isso precisamos de um construtor no record DadosListagemMedicos
      */
-    @GetMapping
     /* -> Pageable interface do Spring para paginação. Passa no findAll que tem uma sobrecarga para receber esse parm
        e com isso o spring monta a query com paginação. Temos trocar o retorno de List para Page, ele devolve alem da lista
        os dados de paginação
@@ -49,26 +53,38 @@ public class MedicoController {
 
     //public List<DadosListagemMedico> listar() {
     //  return  medicoRepository.findAll().stream().map(DadosListagemMedico::new).toList();
-    public Page<DadosListagemMedico> listar(@PageableDefault(size=10, page=0, sort={"especialidade","crm"}) Pageable paginacao) {
+    @GetMapping
+    public ResponseEntity<Page<DadosListagemMedico>> listar(@PageableDefault(size = 10, page = 0, sort = {"especialidade", "crm"}) Pageable paginacao) {
         //return  medicoRepository.findAll(paginacao).map(DadosListagemMedico::new);
-        return  medicoRepository.findAllByAtivoTrue(paginacao).map(DadosListagemMedico::new);
+        var page = medicoRepository.findAllByAtivoTrue(paginacao).map(DadosListagemMedico::new);
+        return ResponseEntity.ok(page);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity detalhar(@PathVariable Long id) {
+        var medico = medicoRepository.getReferenceById(id);
+        return ResponseEntity.ok(new DadosDetalhamentoMedico(medico));
+    }
+
+
     @PutMapping
     @Transactional
-    public void atualizar(@RequestBody @Valid DadosAtualizacaoMedico dados) {
-         Medico medico = medicoRepository.getReferenceById(dados.id());
-         medico.atualizarInformacoes(dados);
-            //Nao precisa metodo save pois quando no JPA em um transaction, vc carrega um entidade e muda algun campo
-            // o spring atualiza a entidade
+    public ResponseEntity atualizar(@RequestBody @Valid DadosAtualizacaoMedico dados) {
+        Medico medico = medicoRepository.getReferenceById(dados.id());
+        medico.atualizarInformacoes(dados);
+        return ResponseEntity.ok(new DadosDetalhamentoMedico(medico));
+        //Nao precisa metodo save pois quando no JPA em um transaction, vc carrega um entidade e muda algun campo
+        // o spring atualiza a entidade
     }
-    @DeleteMapping ("/{id}")
+
+    @DeleteMapping("/{id}")
     @Transactional
     //retornar http 204 - req foi processada mas não retorna um corpo com o ResponseEntity e seus metodos estaticos
     //public void excluir (@PathVariable Long id) {
-    public ResponseEntity excluir (@PathVariable Long id) {
+    public ResponseEntity excluir(@PathVariable Long id) {
         var medico = medicoRepository.getReferenceById(id);
         medico.excluir();   //como esta com @transaction a jpa vai atualizar automaticamente
-       return ResponseEntity.noContent().build();      //com build, o no content, cria um obj response entity
+        return ResponseEntity.noContent().build();      //com build, o no content, cria um obj response entity
     }
 
 }
