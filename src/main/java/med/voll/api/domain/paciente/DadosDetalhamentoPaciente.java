@@ -1,4 +1,6 @@
-package med.voll.api.paciente;
+package med.voll.api.domain.paciente;
+
+import med.voll.api.domain.endereco.Endereco;
 
 public record DadosDetalhamentoPaciente(
          Long id,
@@ -6,11 +8,12 @@ public record DadosDetalhamentoPaciente(
          String email,
          String cpf,
          String telefone,
-         Boolean ativo
+         Boolean ativo,
+         Endereco endereco
 ) {
     public DadosDetalhamentoPaciente (Paciente paciente) {
         this(paciente.getId(),paciente.getNome(),paciente.getEmail(),paciente.getCpf(),
-        paciente.getTelefone(),paciente.getAtivo());
+        paciente.getTelefone(),paciente.getAtivo(),paciente.getEndereco());
     }
     
 }

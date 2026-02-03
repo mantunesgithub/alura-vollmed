@@ -2,7 +2,7 @@ package med.voll.api.controller;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-import med.voll.api.paciente.*;
+import med.voll.api.domain.paciente.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,7 +22,7 @@ public class PacienteControler {
     @PostMapping
     @Transactional
     public  ResponseEntity<DadosDetalhamentoPaciente> cadastrar (@RequestBody @Valid DadosCadastroPaciente dados,
-                             UriComponentsBuilder uriBuilder) {
+                                                                 UriComponentsBuilder uriBuilder) {
         var paciente = new Paciente(dados);
         pacienteRepository.save(paciente);
         var uri = uriBuilder.path("/pacientes/{id}").buildAndExpand(paciente.getId())
@@ -37,6 +37,13 @@ public class PacienteControler {
         var page = pacienteRepository.findAllByAtivoTrue(paginacao).map(DadosListagemPaciente::new);
         return ResponseEntity.ok(page) ;
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity detalhar(@PathVariable Long id) {
+        var paciente = pacienteRepository.getReferenceById(id);
+        return ResponseEntity.ok(new DadosDetalhamentoPaciente(paciente));
+    }
+
 
     @PutMapping
     @Transactional

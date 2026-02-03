@@ -1,9 +1,9 @@
-package med.voll.api.medico;
+package med.voll.api.domain.medico;
 
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import lombok.*;
-import med.voll.api.endereco.Endereco;
+import med.voll.api.domain.endereco.Endereco;
 
 //Anotacoes do Lombok para incluir automaticamente getter, setter, tostring, construtor...
 @Table(name = "medicos")

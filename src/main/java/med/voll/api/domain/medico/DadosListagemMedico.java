@@ -1,4 +1,4 @@
-package med.voll.api.medico;
+package med.voll.api.domain.medico;
 
     // Construtor recebe entidade Medico para Spring converter os dados Medicos para dto DLMedicos.
     // Vamos chamar o proprio construtor do record
